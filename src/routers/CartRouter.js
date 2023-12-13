@@ -29,6 +29,29 @@ module.exports = function (io) {
         }
     });
 
+    router.post('/:cid/product', async (req, res) => {
+        const cid = req.params.cid;
+        const { productId, quantity } = req.body;
+
+        try {
+            const cart = await CartDao.getCartById(cid);
+
+            if (!cart) {
+                return res.status(404).json({ error: 'Carrito no encontrado' });
+            }
+
+            await CartDao.addProductToCart(cid, productId, quantity);
+
+            const updatedCart = await CartDao.getCartById(cid);
+            io.emit('updateCart', updatedCart);
+
+            res.status(201).json({ message: 'Producto agregado al carrito' });
+        } catch (error) {
+            console.error(`Error al agregar un producto al carrito con ID ${cid}:`, error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    });
+
     router.post('/:cid/product/:pid', async (req, res) => {
         const cid = req.params.cid;
         const pid = req.params.pid;

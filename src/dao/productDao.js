@@ -64,12 +64,18 @@ class ProductDao {
 
     async deleteProduct(id) {
         try {
+            const existingProduct = await Product.findById(id);
+    
+            if (!existingProduct) {
+                throw new Error(`No se encontró el producto con el ID ${id}`);
+            }
+    
             const result = await Product.findByIdAndDelete(id);
-
+    
             if (!result) {
                 throw new Error(`No se encontró el producto con el ID ${id}`);
             }
-
+    
             console.log('Producto eliminado');
             return result;
         } catch (error) {

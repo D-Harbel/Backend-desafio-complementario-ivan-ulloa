@@ -102,13 +102,14 @@ module.exports = function (io) {
 
     router.delete('/:id', async (req, res) => {
         const productId = req.params.id;
-
+    
+        const existingProduct = await ProductDao.getProductById(productId);
+        if (!existingProduct) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+    
         try {
             await ProductDao.deleteProduct(productId);
-
-            const products = await ProductDao.getProducts();
-            io.emit('updateProducts', products);
-
             res.status(200).json({ message: 'Producto eliminado exitosamente' });
         } catch (error) {
             console.error(`Error al eliminar el producto con ID ${productId}:`, error);
