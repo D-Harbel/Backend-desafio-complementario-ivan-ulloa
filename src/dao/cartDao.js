@@ -29,7 +29,16 @@ class CartDao {
                 throw new Error(`No se encontró el carrito con el ID ${cartId}`);
             }
 
-            cart.products.push({ product: productId, quantity });
+            const existingProduct = cart.products.find(product => product.product === productId);
+
+            if (existingProduct) {
+
+                existingProduct.quantity += quantity || 1;
+            } else {
+
+                cart.products.push({ product: productId, quantity: quantity || 1 });
+            }
+
             await cart.save();
         } catch (error) {
             console.error('Error al agregar un producto al carrito:', error);

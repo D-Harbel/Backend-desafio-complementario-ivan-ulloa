@@ -55,10 +55,24 @@ module.exports = function (io) {
     router.post('/:cid/product/:pid', async (req, res) => {
         const cid = req.params.cid;
         const pid = req.params.pid;
-        const quantity = req.body.quantity;
     
         try {
-            await CartDao.addProductToCart(cid, pid, quantity);
+            const cart = await CartDao.getCartById(cid);
+    
+            if (!cart) {
+                return res.status(404).json({ error: 'Carrito no encontrado' });
+            }
+    
+            const existingProductIndex = cart.products.findIndex(product => product.product === pid);
+    
+            if (existingProductIndex !== -1) {
+                cart.products[existingProductIndex].quantity += 1;
+            } else {
+                const newProduct = { product: pid, quantity: 1 };
+                cart.products.push(newProduct);
+            }
+    
+            await cart.save();
     
             const products = await ProductDao.getProducts();
             io.emit('updateProducts', products);
